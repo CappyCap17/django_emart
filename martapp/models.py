@@ -10,6 +10,7 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f"{self.username} {self.email}"
 
+
 class Products(models.Model):
     PRODUCT_TYPE = [
         ('Clothes', 'Clothes'),
@@ -36,9 +37,19 @@ class ProductReviews(models.Model):
 
     product_name = models.ForeignKey('Products', on_delete=models.CASCADE, related_name='product_reviews')
     customer_review = models.TextField(max_length=500)
-    customer_rating = models.IntegerField(choices=RATING_CHOICES, default=5)
+    customer_rating = models.IntegerField(choices=RATING_CHOICES, default=0)
     likes = models.PositiveIntegerField(default=0)
     dislikes = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Rating: {self.customer_rating} - {self.customer_review[:30]}..."
+
+class ProductsBought(models.Model):
+    product = models.ForeignKey('Products', on_delete=models.CASCADE)
+    buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    seller = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sold_products', on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    date_purchased = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.buyer.username} bought {self.product.product_name} for ₹{self.price}"

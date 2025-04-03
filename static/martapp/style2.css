@@ -1,0 +1,129 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: white;
+    font-family: Arial, sans-serif;
+  }
+  
+  
+  .top-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background-color: white;
+    border-bottom: 1px solid black;
+    width: 100%;
+    text-align: center;
+    height: 110px;
+  }
+  
+  
+  .company-name {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 10px 0;
+  }
+  
+  
+  .dashboard-logo {
+      width: 140px;
+      height: 150px;
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      background-color: black;
+  }
+  
+  
+  .back-button {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 10px 20px;
+    background-color: black;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    border: none;
+    z-index: 100;
+  }
+  
+  .back-button:hover {
+    background-color: red;
+  }
+  
+  
+  .profile-button {
+    position: fixed;
+    top: 55px;
+    right: 10px;
+    padding: 10px 20px;
+    background-color: black;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    border: none;
+    z-index:100;
+  }
+  
+  .profile-button:hover {
+    background-color: #aaa61b;
+  }
+  
+  
+  .search-container {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .search-input {
+    width: 250px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .search-button {
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-left: 5px;
+    cursor: pointer;
+  }
+  
+  .search-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .logout-button {
+    position: fixed;
+    top: 100px;
+    right: 10px;
+    padding: 10px 20px;
+    background-color: black;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    border: none;
+    z-index: 200;
+    height: 25px;
+    width: 25px;
+     text-align: justify;
+   
+  }
+  
+  .logout-button:hover {
+    background-color: red;
+  }
+  

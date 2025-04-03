@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Page</title>
+<link rel="stylesheet" type="text/css" href="{% static 'martapp/style.css' %}">
+</head>
+<body>
+    <div class="form-container">
+        <form action="/submit" method="post">
+            <h2>Registration</h2>
+
+    
+            <label for="username">Username:</label><br />
+            <input type="text" id="username" name="username" placeholder="Enter your username" required><br /><br />
+
+
+            <label for="email">Email:</label><br />
+            <input type="email" id="email" name="email" placeholder="Enter your email" required><br /><br />
+
+            <label for="password">Password:</label><br />
+            <input type="password" id="password" name="password" minlength="6"
+                   placeholder="Enter your password" required><br /><br />
+
+ 
+            <label for="confirmPassword">Retype Password:</label><br />
+            <input type="password" id="confirmPassword" name="confirmPassword" minlength="6"
+                   placeholder="Confirm your password" required><br /><br />
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>

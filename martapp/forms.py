@@ -3,18 +3,18 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser, Products, ProductReviews
 
 
-class RegisterUser(UserCreationForm):
+class RegisterUserForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'phone', 'password1', 'password2']  
+        fields = ['username', 'email', 'password1', 'password2']
 
 
-class LoginUser(AuthenticationForm):
-    class Meta:
-        fields = ['username', 'password'] 
+class LoginUserForm(AuthenticationForm):
+      class Meta:
+          fields = ['username', 'password']
 
 
-class CreateProduct(forms.ModelForm):
+class CreateProductForm(forms.ModelForm):
     PRODUCT_TYPE = [
         ('Clothes', 'Clothes'),
         ('Electronics', 'Electronics'),
@@ -24,14 +24,19 @@ class CreateProduct(forms.ModelForm):
         ('Work', 'Work'),
         ('Tools', 'Tools'),
     ]
-    product_type = forms.ChoiceField(choices=PRODUCT_TYPE, required=True) 
+    product_type = forms.ChoiceField(choices=PRODUCT_TYPE, required=True)
 
     class Meta:
         model = Products
-        fields = ['product_name', 'proudct_Image', 'product_type', 'seller_name', 'price', 'description']
+        fields = ['product_name', 'product_image', 'product_type', 'seller_name', 'price', 'description']
 
 
-class CreateReview(forms.ModelForm):
+class CreateReviewForm(forms.ModelForm):
     class Meta:
         model = ProductReviews
-        fields = ['product_name', 'customer_review', 'customer_rating'] 
+        fields = ['customer_review', 'customer_rating'] 
+        widgets = {
+            'customer_review': forms.Textarea(attrs={'placeholder': 'Optional review text here...'}),
+        }
+
+    customer_review = forms.CharField(required=False, widget=forms.Textarea(attrs={'placeholder': 'Write a review (optional)...'}))

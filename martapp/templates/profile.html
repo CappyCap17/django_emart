@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Left Container -->
+    <div class="left-container">
+        <h1>Welcome, {{ profile.username.username }}</h1>
+        
+        <h2>Products Bought</h2>
+        <div class="scrollable-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Price</th>
+                        <th>Seller</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products_bought %}
+                    <tr>
+                        <td>{{ product.product.product_name }}</td>
+                        <td>₹{{ product.price }}</td>
+                        <td>{{ product.seller.username }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Products Sold</h2>
+        <div class="scrollable-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Price</th>
+                        <th>Buyer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products_sold %}
+                    <tr>
+                        <td>{{ product.products.product_name }}</td>
+                        <td>₹{{ product.price }}</td>
+                        <td>{{ product.buyer.username }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Add any additional user-specific content here -->
+    </div>
+
+    <!-- Right Container -->
+    <div class="right-container">
+        <button onclick="window.location.href='{% url 'logout' %}'">Logout</button>
+        <button onclick="window.location.href='{% url 'sell_product' %}'">Sell Products</button>
+        <button onclick="window.location.href='{% url 'change_username' %}'">Change Username</button>
+        <button onclick="window.location.href='{% url 'change_password' %}'">Change Password</button>
+    </div>
+</body>
+</html>

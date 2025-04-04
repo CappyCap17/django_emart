@@ -140,3 +140,6 @@ AUTH_USER_MODEL = 'martapp.CustomUser'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+APPEND_SLASH = False
+PASSWORD_CHANGE_REDIRECT_URL = '/profile/'

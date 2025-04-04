@@ -1,1 +1,46 @@
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Emart</title>
+    <link rel="stylesheet" href="{% static 'martapp/dashboard.css' %}">
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <!-- 🔷 TOP CONTAINER -->
+        <div class="top-container">
+            <div class="logo" onclick="location.reload()">
+                <img src="{% static 'martapp/images/logo.png' %}" alt="Emart Logo">
+                <h1>Emart</h1>
+            </div>
+
+            <div class="search-section">
+                <form method="GET" action="{% url 'search' %}">
+                    <input type="text" name="q" placeholder="Search products..." class="search-bar">
+                    <button type="submit" class="search-btn">Search</button>
+                </form>
+            </div>
+
+            <div class="nav-buttons">
+                <a href="{% url 'profile' %}" class="btn">Profile</a>
+                <a href="{% url 'logout' %}" class="btn logout">Logout</a>
+            </div>
+        </div>
+
+        <!-- 🔶 BOTTOM CONTAINER -->
+        <div class="bottom-container">
+            {% for product in recommended_products %}
+                <div class="product-card">
+                    <img src="data:image/jpeg;base64,{{ product.image_data }}" alt="Product Image">
+                    <h3>{{ product.name }}</h3>
+                    <p>₹{{ product.price }}</p>
+                    <p>{{ product.type }}</p>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</body>
+</html>

@@ -12,7 +12,9 @@
 <body>
     <a href="javascript:history.back()" class="back-button">Back</a>
     <div class="form-container">
-        <form action="/submit" method="post">
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+
             <h2>Login</h2>
 
 

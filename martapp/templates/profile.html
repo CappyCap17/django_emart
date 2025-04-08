@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{% static 'martapp/style.css' %}">
 </head>
 <body>
-    <!-- Left Container -->
+
     <div class="left-container">
         <h1>Welcome, {{ profile.username.username }}</h1>
         
@@ -56,17 +56,16 @@
             </table>
         </div>
     </div>
-
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Add any additional user-specific content here -->
+        
     </div>
 
-    <!-- Right Container -->
+
     <div class="right-container">
-        <button onclick="window.location.href='{% url 'logout' %}'">Logout</button>
-        <button onclick="window.location.href='{% url 'sell_product' %}'">Sell Products</button>
-        <button onclick="window.location.href='{% url 'change_username' %}'">Change Username</button>
+        <button onclick="window.location.href='{% url 'logout' %}'">Logout</button><br>
+    </br>
+        <button onclick="window.location.href='{% url 'sell_product' %}'">Sell Products</button><br><br>
+        <button onclick="window.location.href='{% url 'change_username' %}'">Change Username</button><br><br>
         <button onclick="window.location.href='{% url 'change_password' %}'">Change Password</button>
     </div>
 </body>

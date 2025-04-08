@@ -1,28 +1,30 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
-from .forms import RegisterUserForm, LoginUserForm, CreateProductForm, CreateReviewForm
-from .models import CustomUser, Products, ProductReviews, ProductsBought
+from .forms import RegisterUserForm, LoginUserForm, CreateProductForm, CreateReviewForm, ChangeUsernameForm, ChangePasswordForm, ReviewForm, RatingForm
+from .models import CustomUser, Products, ProductReviews, ProductsBought, Products, Purchase
 from functools import wraps
 import random
 from django.http import HttpResponse
+from django.contrib.auth.hashers import check_password
+import base64
+from django.conf import settings
 
 
 # Decorators
 def only_bought(view_func):
-    @wraps(view_func)
     def wrapper(request, product_id, *args, **kwargs):
+        if Purchase.objects.filter(user=request.user, product__id=product_id).exists():
+            return view_func(request, product_id, *args, **kwargs)
+        
         product = get_object_or_404(Products, id=product_id)
-        has_bought = ProductsBought.objects.filter(buyer=request.user, product=product).exists()
-        if not has_bought:
-            messages.error(request, "You need to buy the product to access this feature!")
-            return redirect('view-product', product_id=product.id)
-        return view_func(request, product_id, *args, **kwargs)
+        messages.error(request, "You must buy this product before leaving a review or rating.")
+        return redirect('view-product', product_id=product.id)   
     return wrapper
 
 # Register User
@@ -83,21 +85,32 @@ def sell_product_view(request):
             product = form.save(commit=False)
             product.seller_name = request.user  
             product.save()
-            return redirect('dashboard')  
+            return redirect('dashboard')
+        else:
+            print("Form is NOT valid:")
+            print(form.errors)
     else:
-        form = CreateProductForm()
-        form.fields.pop('seller_name')  
+        form = CreateProductForm(initial={'seller_name': request.user.id})
+
     return render(request, 'sell_product.html', {'form': form})
 
 #Search Products
 @login_required
 def search_view(request):
-    query = request.GET.get('query', '')
-    results = Products.objects.filter(product_name__icontains=query)
-    paginator = Paginator(results, 6)
-    page_number = request.GET.get('page')
-    products = paginator.get_page(page_number)
-    return render(request, 'search_results.html', {'products': products, 'query': query})
+    query = request.GET.get('q') 
+    results = []
+
+    if query:
+        results = Products.objects.filter(
+            product_name__icontains=query
+        ) | Products.objects.filter(
+            product_type__icontains=query
+        ) | Products.objects.filter(
+            seller_name__username__icontains=query
+        )
+
+    return render(request, 'search_results.html', {'query': query, 'results': results})
+
 
 #Product Recommendations
 @login_required
@@ -112,57 +125,77 @@ def view_product_view(request, product_id):
     product = get_object_or_404(Products, id=product_id)
     return render(request, 'product.html', {'product': product})
 
-# Buy Product
+#dashboard/search/ buy product
 @login_required
 def buy_product_view(request, product_id):
     product = get_object_or_404(Products, id=product_id)
+
     if request.method == 'POST':
         if request.user == product.seller_name:
             messages.error(request, "You cannot buy your own product!")
             return redirect('view-product', product_id=product.id)
-        purchase = ProductsBought.objects.create(
+
+        ProductsBought.objects.create(
             product=product,
             buyer=request.user,
             seller=product.seller_name,
             price=product.price
         )
-        purchase.save()
         messages.success(request, "Purchase successful!")
-        return redirect('success_page')
-    return render(request, 'buy_product.html', {'product': product})
+        return redirect('success_page', product_id=product.id)
+
+    if product.product_image:
+        with product.product_image.open('rb') as image_file:
+            encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+    else:
+        encoded_image = ''  
+
+    return render(request, 'buy_product.html', {
+        'product': product,
+        'product_image_base64': encoded_image 
+    })
 
 #Submit Review and Rating
-@login_required
-@only_bought
-def submit_review_rating_view(request, product_id):
-    product = get_object_or_404(Products, id=product_id)
-    if request.method == 'POST':
-        form = CreateReviewForm(request.POST)
-        if form.is_valid():
-            review = form.save(commit=False)
-            review.user = request.user
-            review.product = product
-            review.save()
-            messages.success(request, "Review submitted successfully!")
-            return redirect('view-product', product_id=product.id)
-        else:
-            messages.error(request, "Invalid review submission. Please correct the errors below.")
-    else:
-        form = CreateReviewForm()
-    return render(request, 'submit_review.html', {'form': form, 'product': product})
+# @login_required
+# @only_bought
+# def submit_review_rating_view(request, product_id, action_type):
+#     product = get_object_or_404(Products, id=product_id)
+    
+#     if request.method == 'POST':
+#         form = CreateReviewForm(request.POST)
+#         if form.is_valid():
+#             review = form.save(commit=False)
+#             review.user = request.user
+#             review.product = product
+            
+         
+#             if action_type == 'rating':
+#                 review.review = ''  
+#             elif action_type == 'review':
+#                 review.rating = None  
+                
+#             review.save()
+#             messages.success(request, f"{action_type.capitalize()} submitted successfully!")
+#             return redirect('view-product', product_id=product.id)
+#         else:
+#             messages.error(request, f"Invalid {action_type} submission. Please correct the errors.")
+#     else:
+#         form = CreateReviewForm()
 
-from .models import Products  # Or whatever your Product model is
+#     return render(request, 'submit_review_rating.html', {'form': form, 'product': product})
 
+
+#dashboard view
 @login_required
 def dashboard_view(request):
-    # Fetch 6 random recommended products
+   
     recommended_products = Products.objects.order_by('?')[:6]
 
-    # Convert binary image data to base64 for embedding
+    
     for product in recommended_products:
-        if product.image:
-            import base64
-            product.image_data = base64.b64encode(product.image).decode('utf-8')
+        if product.product_image:
+            with open(product.product_image.path, 'rb') as image_file:
+                image_data = base64.b64encode(image_file.read()).decode('utf-8')        
         else:
             product.image_data = ""
 
@@ -178,10 +211,86 @@ def dashboard_view(request):
 #         return HttpResponse("Form submitted successfully!")
 #     return HttpResponse("This page only handles POST requests.")
 
+
+#dashboard/profile
 @login_required
 def profile_view(request):
     return render(request, "profile.html")
 
+#dashboard/profile/changeusername
 @login_required
 def change_username_view(request):
-    return render(request, 'change_username.html')
+    if request.method == 'POST':
+        form  = ChangeUsernameForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('Profile')
+    else:
+        form = ChangeUsernameForm(instance = request.user)
+    return render(request, 'change_username.html', {'form': form})
+
+#change password
+@login_required
+def change_password_view(request):
+    if request.method == 'POST':
+        form = ChangePasswordForm(request.POST)
+        if form.is_valid():
+            user = request.user
+            current = form.cleaned_data.get('current_password')
+            new = form.cleaned_data.get('new_password')
+            if not check_password(current, user.password):
+                messages.error(request, "Current password is incorrect")
+            else:
+                user.set_password(new)
+                user.save()  
+                update_session_auth_hash(request, user)  
+                messages.success(request, "Password successfully changed.")
+                return redirect('profile')
+    else:
+        form = CustomPasswordChangeForm()
+    
+    return render(request, 'change_password_custom.html', {'form': form})
+
+#buy-product success
+@login_required
+def purchase_success_view(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+    return render(request, 'purchase_success.html', {'product': product})
+
+
+
+@login_required
+@only_bought
+def submit_review_view(request, product_id):
+    form = ReviewForm()
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.product_id = product_id
+            review.save()
+            messages.success(request, "Your review has been submitted.")
+            return redirect('view-product', product_id=product_id)
+    return render(request, 'martapp/submit_review.html', {'form': form, 'product_id': product_id})
+
+@login_required
+@only_bought
+def submit_rating_view(request, product_id):
+    form = RatingForm()
+    if request.method == 'POST':
+        form = RatingForm(request.POST)
+        if form.is_valid():
+            rating = form.save(commit=False)
+            rating.user = request.user
+            rating.product_id = product_id
+            rating.save()
+            messages.success(request, "Your rating has been submitted.")
+            return redirect('view-product', product_id=product_id)
+    return render(request, 'martapp/submit_rating.html', {'form': form, 'product_id': product_id})
+
+def success_page_view(request, product_id=None):
+    product = None
+    if product_id:
+        product = get_object_or_404(Products, id=product_id)
+    return render(request, 'success_page.html', {'product': product})

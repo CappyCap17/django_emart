@@ -9,7 +9,6 @@
 <body>
     <div class="dashboard-container">
 
-        <!-- 🔷 TOP CONTAINER -->
         <div class="top-container">
             <div class="logo" onclick="location.reload()">
                 <img src="{% static 'martapp/images/logo.png' %}" alt="Emart Logo">
@@ -29,14 +28,15 @@
             </div>
         </div>
 
-        <!-- 🔶 BOTTOM CONTAINER -->
         <div class="bottom-container">
             {% for product in recommended_products %}
                 <div class="product-card">
-                    <img src="data:image/jpeg;base64,{{ product.image_data }}" alt="Product Image">
-                    <h3>{{ product.name }}</h3>
-                    <p>₹{{ product.price }}</p>
-                    <p>{{ product.type }}</p>
+                    <a href="{% url 'buy-product' product.id %}" class="product-link">
+                        <img src="data:image/png;base64,{{ product.image_base64 }}" alt="{{ product.product_name }}">
+                        <h3>{{ product.product_name }}</h3>
+                        <p>Seller: {{ product.seller_name.username }}</p>
+                        <p>₹{{ product.price }}</p>
+                    </a>
                 </div>
             {% endfor %}
         </div>

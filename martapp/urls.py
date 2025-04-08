@@ -4,15 +4,20 @@ from .views import (
     LoginView,
     logout_view,
     sell_product_view,
-    search_view,  # Ensure this matches the function name in views.py
+    search_view, 
     recommendation_view,
     view_product_view,
     buy_product_view,
-    submit_review_rating_view,
     dashboard_view,
     # submit_view,
     profile_view,
     change_username_view,
+    change_password_view,
+    profile_view,
+    purchase_success_view,
+    submit_rating_view,
+    submit_review_view,
+    success_page_view,
 )
 from django.contrib.auth import views as auth_views
 
@@ -26,11 +31,18 @@ urlpatterns = [
     path('profile/', profile_view, name='profile'),
     path('recommendations/', recommendation_view, name='recommendations'),
     path('product/<int:product_id>/', view_product_view, name='view-product'),
-    path('product/<int:product_id>/buy/', buy_product_view, name='buy-product'),
-    path('product/<int:product_id>/review/', submit_review_rating_view, name='submit-review'),
+   path('buy/<int:product_id>/', buy_product_view, name='buy-product'),
+    path('product/<int:product_id>/submit/review/', submit_review_view, name='submit-review'),
+path('product/<int:product_id>/submit/rating/', submit_rating_view, name='submit-rating'),
+    path('purchase/success/<int:product_id>/', success_page_view, name='success_page'),
+    
     # path('submit/', submit_view, name='submit'),
     path('change-username/', change_username_view, name='change_username'),
-    path('change-password/', auth_views.PasswordChangeView.as_view(template_name='change_password.html'), name='change_password'),
+    path('change-password/', change_password_view, name='change_password'),
 
 
 ]
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

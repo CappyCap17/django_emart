@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Submit Review & Rating</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #0f172a;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .success-message {
+            color: green;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% block content %}
+  <h2>Submit {{ action_type|title }} for {{ product.name }}</h2>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    {% if action_type == "rating" %}
+      <label for="id_rating">Rating (1 to 5):</label>
+      {{ form.rating }}
+    {% elif action_type == "review" %}
+      <label for="id_review">Write your review:</label>
+      {{ form.review }}
+    {% endif %}
+
+    <br><br>
+    <button type="submit">Submit {{ action_type|title }}</button>
+  </form>
+{% endblock %}
+    </div>
+</body>
+</html>

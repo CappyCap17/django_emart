@@ -1,1 +1,48 @@
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="{% static 'martapp/search.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <div class="logo">Emart</div>
+            <form class="search-bar" method="GET" action="{% url 'search' %}">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search products..." required>
+                <button type="submit">Search</button>
+            </form>
+            <div class="btn-group">
+                <a href="{% url 'dashboard' %}" class="nav-btn">Dashboard</a>
+                <a href="{% url 'profile' %}" class="nav-btn">Profile</a>
+                <a href="{% url 'logout' %}" class="nav-btn">Logout</a>
+            </div>
+        </div>
+
+        <h2 class="result-title">Search Results for "{{ query }}"</h2>
+
+        <div class="product-grid">
+            {% if results %}
+                {% for product in results %}
+                    <a href="{% url 'buy-product' product.id %}" class="product-card-link">
+                        <div class="product-card">
+                            {% if product.product_image %}
+                                <img src="{{ product.product_image.url }}" alt="{{ product.product_name }}">
+                            {% endif %}
+                            <h3>{{ product.product_name }}</h3>
+                            <p><strong>Type:</strong> {{ product.product_type }}</p>
+                            <p><strong>Price:</strong> ₹{{ product.price }}</p>
+                            <p><strong>Seller:</strong> {{ product.seller_name.username }}</p>
+                            <p>{{ product.description|truncatechars:100 }}</p>
+                        </div>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <p>No results found.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Purchase Successful</title>
+    <link rel="stylesheet" href="{% static 'martapp/buy_product.css' %}">
+</head>
+<body>
+    {% extends 'base.html' %}
+{% block content %}
+  <div class="success-container">
+    <h2> Purchase Successful!</h2>
+    <p>You successfully bought: <strong>{{ product.product_name }}</strong></p>
+
+    <div class="action-buttons">
+      <a href="{% url 'submit-review' product.id %}" class="btn btn-primary">📝 Leave a Review</a>
+      <a href="{% url 'submit-rating' product.id %}" class="btn btn-secondary">⭐ Rate this Product</a>
+      <a href="{% url 'dashboard' %}" class="btn">Back to Dashboard</a>
+    </div>
+  </div>
+{% endblock %}
+</body>
+</html>

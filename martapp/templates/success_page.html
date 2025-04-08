@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Purchase Success</title>
+</head>
+<body>
+    <h1> Purchase Successful!</h1>
+
+    {% if product %}
+        <p>You successfully bought: <strong>{{ product.name }}</strong></p>
+        <p>Price: ₹{{ product.price }}</p>
+
+        <div>
+            <a href="{% url 'submit-review' product.id %}">Leave a Review</a> |
+            <a href="{% url 'submit-rating' product.id %}">Rate the Product</a>
+        </div>
+    {% else %}
+        <p>Thank you for your purchase!</p>
+    {% endif %}
+
+    <a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+</body>
+</html>

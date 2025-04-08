@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User
+
 
 class CustomUser(AbstractUser):
 
@@ -50,3 +52,23 @@ class ProductsBought(models.Model):
 
     def __str__(self):
         return f"{self.buyer.username} bought {self.product.product_name} for ₹{self.price}"
+
+class Purchase(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    purchase_date = models.DateTimeField(auto_now_add=True)
+
+class Review(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    review_text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Rating(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    rating_value = models.IntegerField()  # 1 to 5
+    created_at = models.DateTimeField(auto_now_add=True)

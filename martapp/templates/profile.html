@@ -10,7 +10,7 @@
 <body>
 
     <div class="left-container">
-        <h1>Welcome, {{ profile.username.username }}</h1>
+        <h1>Welcome, {{ profile.username}}</h1>
         
         <h2>Products Bought</h2>
         <div class="scrollable-table">
@@ -47,7 +47,7 @@
                 <tbody>
                     {% for product in products_sold %}
                     <tr>
-                        <td>{{ product.products.product_name }}</td>
+                        <td>{{ product.product.product_name }}</td>
                         <td>₹{{ product.price }}</td>
                         <td>{{ product.buyer.username }}</td>
                     </tr>
@@ -62,11 +62,13 @@
 
 
     <div class="right-container">
-        <button onclick="window.location.href='{% url 'logout' %}'">Logout</button><br>
-    </br>
+           <a href="{% url 'dashboard' %}" class="back-button">Back</a> <br>
+           </br>
+        <button onclick="window.location.href='{% url 'logout' %}'">Logout</button><br></br>
         <button onclick="window.location.href='{% url 'sell_product' %}'">Sell Products</button><br><br>
         <button onclick="window.location.href='{% url 'change_username' %}'">Change Username</button><br><br>
-        <button onclick="window.location.href='{% url 'change_password' %}'">Change Password</button>
+        <button onclick="window.location.href='{% url 'change_password' %}'">Change Password</button><br></br>
+        <button onclick="window.location.href='{% url 'seller_inventory' %}'">Inventory</button>
     </div>
 </body>
 </html>

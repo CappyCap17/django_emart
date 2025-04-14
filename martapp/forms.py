@@ -59,22 +59,34 @@ class ChangeUsernameForm(forms.ModelForm):
             raise forms.ValidationError("This username is already taken.")
         return username
 
-class ChangePasswordForm(forms.ModelForm):
+class ChangePasswordForm(forms.Form):
     current_password = forms.CharField(
-        widget = forms.PasswordInput(attrs={'placeholder':'Current password'})
+        widget=forms.PasswordInput(attrs={'placeholder': 'Current password'})
     )
     new_password = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': 'New password'})
     )
     confirm_password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'placeholder':'Conform New password'})
+        widget=forms.PasswordInput(attrs={'placeholder': 'Confirm new password'})
     )
+
+    def __init__(self, user, *args, **kwargs):
+        super(ChangePasswordForm, self).__init__(*args, **kwargs)
+        self.user = user
+
     def clean(self):
         cleaned_data = super().clean()
+        current_password = cleaned_data.get("current_password")
         new_password = cleaned_data.get("new_password")
         confirm_password = cleaned_data.get("confirm_password")
+
+        if not self.user.check_password(current_password):
+            raise forms.ValidationError("Current password is incorrect")
+
         if new_password != confirm_password:
             raise forms.ValidationError("New passwords do not match")
+
+        return cleaned_data
 
 class ReviewForm(forms.ModelForm):
     class Meta:
@@ -85,3 +97,17 @@ class RatingForm(forms.ModelForm):
     class Meta:
         model = Rating
         fields = ['rating_value']
+
+class StockUpdateForm(forms.ModelForm):
+    action = forms.ChoiceField(choices=[('add', 'Add'), ('remove', 'Remove')])
+    amount = forms.IntegerField(min_value=1)
+    
+    class Meta:
+        model = Products
+        fields = ['stock']
+
+    stock = forms.IntegerField(
+        min_value = 0,
+        widget=forms.NumberInput(attrs = {'placeholder': 'Enter stock count'})
+    )
+

@@ -18,6 +18,7 @@ from .views import (
     submit_rating_view,
     submit_review_view,
     success_page_view,
+    seller_inventory_view,
 )
 from django.contrib.auth import views as auth_views
 
@@ -35,6 +36,7 @@ urlpatterns = [
     path('product/<int:product_id>/submit/review/', submit_review_view, name='submit-review'),
 path('product/<int:product_id>/submit/rating/', submit_rating_view, name='submit-rating'),
     path('purchase/success/<int:product_id>/', success_page_view, name='success_page'),
+    path('seller-inventory/', seller_inventory_view, name='seller_inventory'),
     
     # path('submit/', submit_view, name='submit'),
     path('change-username/', change_username_view, name='change_username'),

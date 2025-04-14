@@ -6,14 +6,13 @@ from django.core.paginator import Paginator
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
-from .forms import RegisterUserForm, LoginUserForm, CreateProductForm, CreateReviewForm, ChangeUsernameForm, ChangePasswordForm, ReviewForm, RatingForm
-from .models import CustomUser, Products, ProductReviews, ProductsBought, Products, Purchase
+from .forms import RegisterUserForm, LoginUserForm, CreateProductForm, CreateReviewForm, ChangeUsernameForm, ChangePasswordForm, ReviewForm, RatingForm, StockUpdateForm
+from .models import CustomUser, Products, ProductReviews, ProductsBought, Purchase
 from functools import wraps
 import random
 from django.http import HttpResponse
 from django.contrib.auth.hashers import check_password
 import base64
-from django.conf import settings
 
 
 # Decorators
@@ -27,7 +26,8 @@ def only_bought(view_func):
         return redirect('view-product', product_id=product.id)   
     return wrapper
 
-# Register User
+
+# ** Register User ** #
 @method_decorator(csrf_protect, name='dispatch')
 class RegisterUserView(View):
     def get(self, request):
@@ -46,7 +46,8 @@ class RegisterUserView(View):
             messages.error(request, "Unsuccessful registration. Please correct the errors below.")
         return render(request, 'register.html', {'form': form})
 
-# Login User
+
+# ** Login User ** #
 @method_decorator(csrf_protect, name='dispatch')
 class LoginView(View):
     def get(self, request):
@@ -69,14 +70,16 @@ class LoginView(View):
             messages.error(request, "Invalid login credentials.")
         return render(request, "login.html", {'form': form})
 
-# Logout User
+
+# ** Logout User ** #
 @login_required
 def logout_view(request):
     logout(request)
     messages.success(request, "You have been logged out.")
     return redirect('login')
 
-# Sell Product
+
+# ** Sell Product ** #
 @login_required
 def sell_product_view(request):
     if request.method == 'POST':
@@ -94,7 +97,8 @@ def sell_product_view(request):
 
     return render(request, 'sell_product.html', {'form': form})
 
-#Search Products
+
+# ** Search Products ** #
 @login_required
 def search_view(request):
     query = request.GET.get('q') 
@@ -102,30 +106,38 @@ def search_view(request):
 
     if query:
         results = Products.objects.filter(
+            is_listed=True
+        ).filter(
             product_name__icontains=query
         ) | Products.objects.filter(
+            is_listed=True
+        ).filter(
             product_type__icontains=query
         ) | Products.objects.filter(
+            is_listed=True
+        ).filter(
             seller_name__username__icontains=query
         )
 
     return render(request, 'search_results.html', {'query': query, 'results': results})
 
 
-#Product Recommendations
+# ** Product Recommendations ** #
 @login_required
 def recommendation_view(request):
-    display = list(Products.objects.order_by('-customer_rating')[:6])
+    display = list(Products.objects.filter(is_listed=True).order_by('-customer_rating')[:6])
     random.shuffle(display)
     return render(request, 'dashboard.html', {'display': display})
 
-#View Product Details
+
+# ** View Product Details ** #
 @login_required
 def view_product_view(request, product_id):
     product = get_object_or_404(Products, id=product_id)
     return render(request, 'product.html', {'product': product})
 
-#dashboard/search/ buy product
+
+# ** Buy Product ** #
 @login_required
 def buy_product_view(request, product_id):
     product = get_object_or_404(Products, id=product_id)
@@ -155,110 +167,8 @@ def buy_product_view(request, product_id):
         'product_image_base64': encoded_image 
     })
 
-#Submit Review and Rating
-# @login_required
-# @only_bought
-# def submit_review_rating_view(request, product_id, action_type):
-#     product = get_object_or_404(Products, id=product_id)
-    
-#     if request.method == 'POST':
-#         form = CreateReviewForm(request.POST)
-#         if form.is_valid():
-#             review = form.save(commit=False)
-#             review.user = request.user
-#             review.product = product
-            
-         
-#             if action_type == 'rating':
-#                 review.review = ''  
-#             elif action_type == 'review':
-#                 review.rating = None  
-                
-#             review.save()
-#             messages.success(request, f"{action_type.capitalize()} submitted successfully!")
-#             return redirect('view-product', product_id=product.id)
-#         else:
-#             messages.error(request, f"Invalid {action_type} submission. Please correct the errors.")
-#     else:
-#         form = CreateReviewForm()
 
-#     return render(request, 'submit_review_rating.html', {'form': form, 'product': product})
-
-
-#dashboard view
-@login_required
-def dashboard_view(request):
-   
-    recommended_products = Products.objects.order_by('?')[:6]
-
-    
-    for product in recommended_products:
-        if product.product_image:
-            with open(product.product_image.path, 'rb') as image_file:
-                image_data = base64.b64encode(image_file.read()).decode('utf-8')        
-        else:
-            product.image_data = ""
-
-    return render(request, 'dashboard.html', {
-        'recommended_products': recommended_products
-    })
-
-
-
-# def submit_view(request):
-#     if request.method == 'POST':
-#         # handle form submission
-#         return HttpResponse("Form submitted successfully!")
-#     return HttpResponse("This page only handles POST requests.")
-
-
-#dashboard/profile
-@login_required
-def profile_view(request):
-    return render(request, "profile.html")
-
-#dashboard/profile/changeusername
-@login_required
-def change_username_view(request):
-    if request.method == 'POST':
-        form  = ChangeUsernameForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('Profile')
-    else:
-        form = ChangeUsernameForm(instance = request.user)
-    return render(request, 'change_username.html', {'form': form})
-
-#change password
-@login_required
-def change_password_view(request):
-    if request.method == 'POST':
-        form = ChangePasswordForm(request.POST)
-        if form.is_valid():
-            user = request.user
-            current = form.cleaned_data.get('current_password')
-            new = form.cleaned_data.get('new_password')
-            if not check_password(current, user.password):
-                messages.error(request, "Current password is incorrect")
-            else:
-                user.set_password(new)
-                user.save()  
-                update_session_auth_hash(request, user)  
-                messages.success(request, "Password successfully changed.")
-                return redirect('profile')
-    else:
-        form = CustomPasswordChangeForm()
-    
-    return render(request, 'change_password_custom.html', {'form': form})
-
-#buy-product success
-@login_required
-def purchase_success_view(request, product_id):
-    product = get_object_or_404(Products, id=product_id)
-    return render(request, 'purchase_success.html', {'product': product})
-
-
-
+# ** Submit Review and Rating ** #
 @login_required
 @only_bought
 def submit_review_view(request, product_id):
@@ -289,6 +199,123 @@ def submit_rating_view(request, product_id):
             return redirect('view-product', product_id=product_id)
     return render(request, 'martapp/submit_rating.html', {'form': form, 'product_id': product_id})
 
+
+# ** Dashboard View ** #
+@login_required
+def dashboard_view(request):
+    # Fetch only listed products
+    recommended_products = Products.objects.filter(is_listed=True).order_by('?')[:6]
+
+    for product in recommended_products:
+        if product.product_image:
+            with open(product.product_image.path, 'rb') as image_file:
+                image_data = base64.b64encode(image_file.read()).decode('utf-8')        
+        else:
+            product.image_data = ""
+
+    return render(request, 'dashboard.html', {
+        'recommended_products': recommended_products
+    })
+
+# ** Profile View ** #
+@login_required
+def profile_view(request):
+    user = request.user  # Get the current logged-in user
+
+    # Fetch products bought and sold by the user
+    products_bought = ProductsBought.objects.filter(buyer=user)
+    products_sold = ProductsBought.objects.filter(seller=user)
+
+    # Pass the profile data to the template for rendering
+    context = {
+        'profile': user,
+        'products_bought': products_bought,
+        'products_sold': products_sold,
+    }
+
+    return render(request, 'profile.html', context)
+
+
+# ** Seller Inventory View ** #
+@login_required
+def seller_inventory_view(request):
+    seller = request.user  # Get the logged-in user as the seller
+    products = Products.objects.filter(seller_name=seller)  # Filter products by seller
+
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')  # Get product ID from POST
+        product = get_object_or_404(Products, id=product_id, seller_name=seller)  # Get the product
+
+        # Delete product logic
+        if 'delete_product' in request.POST:
+            product.delete()
+            return redirect('seller_inventory')  # Redirect after deletion to update the page
+
+        # List/unlist product logic
+        elif 'list_product' in request.POST:
+            product.is_listed = True
+            product.save()
+
+        elif 'unlist_product' in request.POST:
+            product.is_listed = False
+            product.save()
+
+        # Stock management logic
+        elif 'add_stock' in request.POST:
+            add_stock = int(request.POST.get('add_stock', 0))
+            if add_stock > 0:
+                product.stock += add_stock
+                product.save()
+
+        elif 'remove_stock' in request.POST:
+            remove_stock = int(request.POST.get('remove_stock', 0))
+            if remove_stock > 0 and product.stock >= remove_stock:
+                product.stock -= remove_stock
+                product.save()
+
+    # Render the updated page with the products list
+    return render(request, 'seller_inventory.html', {'products': products})
+
+
+# ** Purchase Success Page ** #
+@login_required
+def purchase_success_view(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+    return render(request, 'purchase_success.html', {'product': product})
+
+@login_required
+def change_username_view(request):
+    if request.method == 'POST':
+        form = ChangeUsernameForm(request.POST, instance=request.user)
+        if form.is_valid():
+            new_username = form.cleaned_data['username']
+            request.user.username = new_username  # Update the username field
+            request.user.save()
+            messages.success(request, "Your username has been updated successfully.")
+            return redirect('profile')  # Redirect to profile page after updating username
+    else:
+        form = ChangeUsernameForm(instance=request.user)
+
+    return render(request, 'change_username.html', {'form': form})
+
+
+# ** Change Password View ** #
+@login_required
+def change_password_view(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()  # Save the new password
+            update_session_auth_hash(request, form.user)  # Prevent session logout
+            messages.success(request, "Your password has been updated successfully.")
+            return redirect('profile')  # Redirect to profile page after changing password
+    else:
+        form = PasswordChangeForm(request.user)
+
+    return render(request, 'change_password.html', {'form': form})
+
+# Success Page View
+@login_required
 def success_page_view(request, product_id=None):
     product = None
     if product_id:

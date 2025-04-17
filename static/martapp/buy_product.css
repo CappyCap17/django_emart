@@ -1,9 +1,4 @@
-body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f4f6f9;
-  }
+
   
   .buy-container {
     max-width: 700px;
@@ -70,3 +65,38 @@ body {
     background-color: #059669;
   }
   
+
+.product-box {
+  width: 50%;
+}
+
+.product-box img {
+  max-width: 100%;
+  height: auto;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+
+.buy-btn {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.buy-btn:hover {
+  background-color: #0056b3;
+}
+
+.review-links {
+  margin-top: 20px;
+}
+
+.review-links a {
+  margin-right: 10px;
+  text-decoration: none;
+}

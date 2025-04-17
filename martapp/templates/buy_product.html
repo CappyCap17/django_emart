@@ -3,34 +3,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buy Product</title>
-    <link rel="stylesheet" href="{% static 'martapp/buy_product.css' %}">
+    <link rel="stylesheet" href="{% static 'martapp/style.css' %}">
 </head>
 <body>
     <div class="buy-container">
         <div class="product-box">
-            {% if product_image_base64 %}
-                <img src="data:image/png;base64,{{ product_image_base64 }}" alt="{{ product.product_name }}">
+            {% if product.product_image %}
+                <img src="{{ product.product_image.url }}" alt="{{ product.product_name }}">
             {% else %}
                 <p>No image available</p>
             {% endif %}
 
             <h2>{{ product.product_name }}</h2>
-            <p><strong>Seller:</strong> {{ product.seller_name.username }}</p>
-            <p><strong>Type:</strong> {{ product.product_type }}</p>
+            <p><strong>Seller:</strong> {{ product.seller.username }}</p>
             <p><strong>Price:</strong> ₹{{ product.price }}</p>
+            <p><strong>Stock Available:</strong> {{ product.stock }} units</p>  
 
             <form method="POST">
                 {% csrf_token %}
-                <button class="buy-btn" type="submit">Buy Now</button>
+                <label for="quantity">Quantity:</label>
+                <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ product.stock }}">
+                
+                <button type="submit" class="buy-btn">Buy Now</button>
             </form>
 
-            <div class="review-links">
-                <a href="{% url 'submit-review' product.id %}">Leave a Review</a>
-<a href="{% url 'submit-rating' product.id %}">Rate Product</a>
-              </div>
-              
+            {% if error_message %}
+                <p class="error-message">{{ error_message }}</p>
+            {% endif %}
 
+            <div class="review-links">
+                <a href="{% url 'submit-review' product.id %}">Write a Review</a>
+                <a href="{% url 'submit-rating' product.id %}">Rate Product</a>
+            </div>
+            <br>
+        </br>
+        <a href="{% url 'add-to-cart' product.id %}">Add to Cart</a>
         </div>
     </div>
 </body>

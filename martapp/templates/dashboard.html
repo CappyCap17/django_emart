@@ -25,19 +25,21 @@
             <div class="nav-buttons">
                 <a href="{% url 'profile' %}" class="btn">Profile</a>
                 <a href="{% url 'logout' %}" class="btn logout">Logout</a>
+                <a href="{% url 'view-cart' %}" class="cart-button">Cart</a>
+
             </div>
         </div>
 
         <div class="bottom-container">
             {% for product in recommended_products %}
                 <div class="product-card">
-                    <a href="{% url 'buy-product' product.id %}" class="product-link">
+                    
                         <img src="data:image/png;base64,{{ product.image_base64 }}" alt="{{ product.product_name }}">
                         <h3>{{ product.product_name }}</h3>
                         <p>Seller: {{ product.seller_name.username }}</p>
                         <p>₹{{ product.price }}</p>
-                    </a>
-                </div>
+                        <a href="{% url 'buy_product' product.id %}" class="product-link">Buy</a> 
+                </div> 
             {% endfor %}
         </div>
 

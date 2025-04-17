@@ -26,7 +26,7 @@
         <div class="product-grid">
             {% if results %}
                 {% for product in results %}
-                    <a href="{% url 'buy-product' product.id %}" class="product-card-link">
+                    <a href="{% url 'buy_product' product.id %}" class="product-card-link">
                         <div class="product-card">
                             {% if product.product_image %}
                                 <img src="{{ product.product_image.url }}" alt="{{ product.product_name }}">

@@ -74,3 +74,13 @@ class Rating(models.Model):
     product = models.ForeignKey(Products, on_delete=models.CASCADE)
     rating_value = models.IntegerField()  # 1 to 5
     created_at = models.DateTimeField(auto_now_add=True)
+
+class CartItem(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+

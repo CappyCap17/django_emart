@@ -1,0 +1,101 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f9fc;
+    display: flex;
+    height: 100vh;
+}
+
+/* Left container for products */
+.left-container {
+    width: 70%;
+    padding: 30px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    box-shadow: inset -1px 0 0 #ddd;
+}
+
+.left-container h1 {
+    color: #333;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.left-container h2 {
+    color: #444;
+    margin-top: 40px;
+    font-size: 22px;
+}
+
+.scrollable-table {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+    background: #fafafa;
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table thead {
+    background-color: #2a9df4;
+    color: white;
+}
+
+table th, table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+table a {
+    color: #2a9df4;
+    text-decoration: none;
+}
+
+table a:hover {
+    text-decoration: underline;
+}
+
+/* Right container for buttons */
+.right-container {
+    width: 30%;
+    padding: 30px;
+    background-color: #2a9df4;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 15px;
+}
+
+.right-container button, .right-container .back-button {
+    background-color: white;
+    color: #2a9df4;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.right-container button:hover, .right-container .back-button:hover {
+    background-color: #e1f0ff;
+    transform: translateY(-2px);
+}
+
+.back-button {
+    display: inline-block;
+}

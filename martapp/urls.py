@@ -19,6 +19,12 @@ from .views import (
     submit_review_view,
     success_page_view,
     seller_inventory_view,
+    view_cart,
+    remove_from_cart,
+    add_to_cart,
+    view_cart,
+    buy_cart,
+
 )
 from django.contrib.auth import views as auth_views
 
@@ -32,15 +38,17 @@ urlpatterns = [
     path('profile/', profile_view, name='profile'),
     path('recommendations/', recommendation_view, name='recommendations'),
     path('product/<int:product_id>/', view_product_view, name='view-product'),
-   path('buy/<int:product_id>/', buy_product_view, name='buy-product'),
+    path('buy/<int:product_id>/', buy_product_view, name='buy_product'),
     path('product/<int:product_id>/submit/review/', submit_review_view, name='submit-review'),
-path('product/<int:product_id>/submit/rating/', submit_rating_view, name='submit-rating'),
+    path('product/<int:product_id>/submit/rating/', submit_rating_view, name='submit-rating'),
     path('purchase/success/<int:product_id>/', success_page_view, name='success_page'),
     path('seller-inventory/', seller_inventory_view, name='seller_inventory'),
-    
-    # path('submit/', submit_view, name='submit'),
     path('change-username/', change_username_view, name='change_username'),
     path('change-password/', change_password_view, name='change_password'),
+    path('cart/', view_cart, name='view-cart'),
+path('cart/add/<int:product_id>/', add_to_cart, name='add-to-cart'),
+path('cart/remove/<int:item_id>/', remove_from_cart, name='remove-from-cart'),
+path('cart/buy/', buy_cart, name='buy-cart'),
 
 
 ]

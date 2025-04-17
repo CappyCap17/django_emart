@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Cart</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+        .cart-container {
+            background: white;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            border-radius: 10px;
+        }
+        .cart-item {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px 0;
+        }
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        label {
+            margin-right: 10px;
+        }
+        .buy-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .remove-btn {
+            color: red;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="cart-container">
+        <h2>Your Cart</h2>
+
+        {% if cart_items %}
+            <form method="POST" action="{% url 'buy-cart' %}">
+                {% csrf_token %}
+                {% for item in cart_items %}
+                    <div class="cart-item">
+                        <strong>{{ item.product.name }}</strong><br>
+                        Seller: {{ item.product.seller.username }}<br>
+                        Price: ₹{{ item.product.price }}<br>
+                        Stock: {{ item.product.stock }}<br>
+
+                        <label for="qty_{{ item.id }}">Quantity:</label>
+                        <input type="number" name="quantities[{{ item.id }}]" id="qty_{{ item.id }}" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}">
+
+                        <br>
+                        <a class="remove-btn" href="{% url 'remove-from-cart' item.product.id %}">Remove</a>
+                    </div>
+                {% endfor %}
+
+                <button class="buy-button" type="submit">Buy All</button>
+            </form>
+        {% else %}
+            <p>Your cart is empty.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

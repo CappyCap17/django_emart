@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser, Products, ProductReviews, Review, Rating 
 from django.contrib.auth import get_user_model
+from .models import CartItem
 
 User = get_user_model()
 
@@ -111,3 +112,10 @@ class StockUpdateForm(forms.ModelForm):
         widget=forms.NumberInput(attrs = {'placeholder': 'Enter stock count'})
     )
 
+class CartQuantityForm(forms.ModelForm):
+    class Meta:
+        model = CartItem
+        fields = ['quantity']
+        widgets = {
+            'quantity': forms.NumberInput(attrs={'min': '1'})
+        }

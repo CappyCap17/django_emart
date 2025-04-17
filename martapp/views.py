@@ -6,14 +6,14 @@ from django.core.paginator import Paginator
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
-from .forms import RegisterUserForm, LoginUserForm, CreateProductForm, CreateReviewForm, ChangeUsernameForm, ChangePasswordForm, ReviewForm, RatingForm, StockUpdateForm
-from .models import CustomUser, Products, ProductReviews, ProductsBought, Purchase
+from .forms import RegisterUserForm, LoginUserForm, CreateProductForm, CreateReviewForm, ChangeUsernameForm, ChangePasswordForm, ReviewForm, RatingForm, StockUpdateForm, CartQuantityForm
+from .models import CustomUser, Products, ProductReviews, ProductsBought, Purchase, CartItem 
 from functools import wraps
 import random
 from django.http import HttpResponse
 from django.contrib.auth.hashers import check_password
 import base64
-
+from django.contrib.auth.forms import PasswordChangeForm
 
 # Decorators
 def only_bought(view_func):
@@ -137,73 +137,97 @@ def view_product_view(request, product_id):
     return render(request, 'product.html', {'product': product})
 
 
-# ** Buy Product ** #
+# Buy Product 
 @login_required
 def buy_product_view(request, product_id):
     product = get_object_or_404(Products, id=product_id)
 
+    if request.user == product.seller_name:
+        messages.error(request, "You cannot buy your own product!")
+        return redirect('view-product', product_id=product.id)
+
     if request.method == 'POST':
-        if request.user == product.seller_name:
-            messages.error(request, "You cannot buy your own product!")
-            return redirect('view-product', product_id=product.id)
+        quantity = int(request.POST.get('quantity', 1))  
+       
+        if quantity > product.stock:
+            messages.error(request, "Not enough stock available!")
+            return redirect('buy-product', product_id=product.id)
 
         ProductsBought.objects.create(
             product=product,
             buyer=request.user,
             seller=product.seller_name,
-            price=product.price
+            price=product.price * quantity  
         )
-        messages.success(request, "Purchase successful!")
-        return redirect('success_page', product_id=product.id)
+
+        product.stock -= quantity
+        product.save()
+
+        messages.success(request, f"Purchase successful! You bought {quantity} {product.product_name}(s).")
+        return redirect('success_page', product_id=product.id)  
 
     if product.product_image:
         with product.product_image.open('rb') as image_file:
             encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
     else:
-        encoded_image = ''  
+        encoded_image = ''
 
     return render(request, 'buy_product.html', {
         'product': product,
-        'product_image_base64': encoded_image 
+        'product_image_base64': encoded_image
     })
 
 
-# ** Submit Review and Rating ** #
+#Submit Review and Rating 
 @login_required
 @only_bought
 def submit_review_view(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
     form = ReviewForm()
+
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
             review = form.save(commit=False)
             review.user = request.user
-            review.product_id = product_id
+            review.product = product
             review.save()
             messages.success(request, "Your review has been submitted.")
             return redirect('view-product', product_id=product_id)
-    return render(request, 'martapp/submit_review.html', {'form': form, 'product_id': product_id})
+
+    return render(request, 'martapp/submit_review_rating.html', {
+        'form': form,
+        'product': product,
+        'action_type': 'review'
+    })
 
 @login_required
 @only_bought
 def submit_rating_view(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
     form = RatingForm()
+
     if request.method == 'POST':
         form = RatingForm(request.POST)
         if form.is_valid():
             rating = form.save(commit=False)
             rating.user = request.user
-            rating.product_id = product_id
+            rating.product = product
             rating.save()
             messages.success(request, "Your rating has been submitted.")
             return redirect('view-product', product_id=product_id)
-    return render(request, 'martapp/submit_rating.html', {'form': form, 'product_id': product_id})
+
+    return render(request, 'martapp/submit_review_rating.html', {
+        'form': form,
+        'product': product,
+        'action_type': 'rating'
+    })
 
 
-# ** Dashboard View ** #
+# Dashboard View
 @login_required
 def dashboard_view(request):
-    # Fetch only listed products
+
     recommended_products = Products.objects.filter(is_listed=True).order_by('?')[:6]
 
     for product in recommended_products:
@@ -217,16 +241,16 @@ def dashboard_view(request):
         'recommended_products': recommended_products
     })
 
-# ** Profile View ** #
+# Profile View
 @login_required
 def profile_view(request):
-    user = request.user  # Get the current logged-in user
+    user = request.user  
 
-    # Fetch products bought and sold by the user
+
     products_bought = ProductsBought.objects.filter(buyer=user)
     products_sold = ProductsBought.objects.filter(seller=user)
 
-    # Pass the profile data to the template for rendering
+    
     context = {
         'profile': user,
         'products_bought': products_bought,
@@ -236,22 +260,20 @@ def profile_view(request):
     return render(request, 'profile.html', context)
 
 
-# ** Seller Inventory View ** #
+# Seller Inventory View
 @login_required
 def seller_inventory_view(request):
-    seller = request.user  # Get the logged-in user as the seller
-    products = Products.objects.filter(seller_name=seller)  # Filter products by seller
+    seller = request.user  
+    products = Products.objects.filter(seller_name=seller) 
 
     if request.method == 'POST':
-        product_id = request.POST.get('product_id')  # Get product ID from POST
-        product = get_object_or_404(Products, id=product_id, seller_name=seller)  # Get the product
+        product_id = request.POST.get('product_id')  # 
+        product = get_object_or_404(Products, id=product_id, seller_name=seller)  
 
-        # Delete product logic
         if 'delete_product' in request.POST:
             product.delete()
-            return redirect('seller_inventory')  # Redirect after deletion to update the page
+            return redirect('seller_inventory')  
 
-        # List/unlist product logic
         elif 'list_product' in request.POST:
             product.is_listed = True
             product.save()
@@ -260,7 +282,6 @@ def seller_inventory_view(request):
             product.is_listed = False
             product.save()
 
-        # Stock management logic
         elif 'add_stock' in request.POST:
             add_stock = int(request.POST.get('add_stock', 0))
             if add_stock > 0:
@@ -273,11 +294,10 @@ def seller_inventory_view(request):
                 product.stock -= remove_stock
                 product.save()
 
-    # Render the updated page with the products list
     return render(request, 'seller_inventory.html', {'products': products})
 
 
-# ** Purchase Success Page ** #
+# Purchase Success Page 
 @login_required
 def purchase_success_view(request, product_id):
     product = get_object_or_404(Products, id=product_id)
@@ -289,10 +309,10 @@ def change_username_view(request):
         form = ChangeUsernameForm(request.POST, instance=request.user)
         if form.is_valid():
             new_username = form.cleaned_data['username']
-            request.user.username = new_username  # Update the username field
+            request.user.username = new_username  
             request.user.save()
             messages.success(request, "Your username has been updated successfully.")
-            return redirect('profile')  # Redirect to profile page after updating username
+            return redirect('profile')  
     else:
         form = ChangeUsernameForm(instance=request.user)
 
@@ -321,3 +341,78 @@ def success_page_view(request, product_id=None):
     if product_id:
         product = get_object_or_404(Products, id=product_id)
     return render(request, 'success_page.html', {'product': product})
+
+#add-t0-cart view
+@login_required
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+    cart_item, created = CartItem.objects.get_or_create(user=request.user, product=product)
+
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+
+    messages.success(request, "Product added to cart.")
+    return redirect('view-product', product_id=product.id)
+
+#view-cart
+@login_required
+def view_cart(request):
+    cart_items = CartItem.objects.filter(user=request.user)
+    total_price = 0
+    for item in cart_items:
+        total_price += item.quantity * item.product.price
+
+    if request.method == 'POST':
+        for item in cart_items:
+            form = CartQuantityForm(request.POST, instance=item, prefix=str(item.id))
+            if form.is_valid():
+                updated_quantity = form.cleaned_data['quantity']
+                if updated_quantity > item.product.stock:
+                    messages.error(request, f"Cannot buy more than available stock for {item.product.name}.")
+                else:
+                    item.quantity = updated_quantity
+                    item.save()
+        return redirect('view-cart')
+
+    forms_dict = {item.id: CartQuantityForm(instance=item, prefix=str(item.id)) for item in cart_items}
+
+    return render(request, 'buy_cart.html', {
+        'cart_items': cart_items,
+        'total_price': total_price,
+        'forms_dict': forms_dict,
+    })
+
+#removefromcart
+@login_required
+def remove_from_cart(request, item_id):
+    item = get_object_or_404(CartItem, id=item_id, user=request.user)
+    item.delete()
+    messages.success(request, "Item removed from cart.")
+    return redirect('view-cart')
+
+#buy-cart
+@login_required
+def buy_cart(request):
+    cart_items = CartItem.objects.filter(user=request.user)
+    for item in cart_items:
+        if item.quantity > item.product.stock:
+            messages.error(request, f"Insufficient stock for {item.product.name}")
+            return redirect('view-cart')
+
+    for item in cart_items:
+        product = item.product
+        product.stock -= item.quantity
+        product.save()
+
+    
+        BoughtProduct.objects.create(
+            user=request.user,
+            product=product,
+            quantity=item.quantity,
+            bought_at=timezone.now()
+        )
+
+    cart_items.delete()
+    messages.success(request, "Purchase completed successfully!")
+    return redirect('dashboard') 

@@ -39,19 +39,26 @@
             text-decoration: underline;
             cursor: pointer;
         }
+        .back-button {
+            color: grey;
+            margin-top: 10px;
+            padding: 10px 10px;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="cart-container">
         <h2>Your Cart</h2>
-
+        <a href="{% url 'dashboard' %}" class="back-button">Back</a>
         {% if cart_items %}
             <form method="POST" action="{% url 'buy-cart' %}">
                 {% csrf_token %}
                 {% for item in cart_items %}
                     <div class="cart-item">
-                        <strong>{{ item.product.name }}</strong><br>
-                        Seller: {{ item.product.seller.username }}<br>
+                        <strong>{{ item.product.product_name }}</strong><br>
+                        Seller: {{ item.product.seller.user }}<br>
                         Price: ₹{{ item.product.price }}<br>
                         Stock: {{ item.product.stock }}<br>
 

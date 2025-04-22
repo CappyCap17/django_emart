@@ -49,6 +49,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'martapp.middleware.RestrictUnauthenticatedMiddleware',
+    'martapp.middleware.UserActivityLoggerMiddleware',
+    'martapp.middleware.RecentProductTrackerMiddleware',
 ]
 
 ROOT_URLCONF = 'emart.urls'
@@ -143,3 +146,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 APPEND_SLASH = False
 PASSWORD_CHANGE_REDIRECT_URL = '/profile/'
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 1800 #expires in 30 mins
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False

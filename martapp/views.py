@@ -14,6 +14,9 @@ from django.http import HttpResponse
 from django.contrib.auth.hashers import check_password
 import base64
 from django.contrib.auth.forms import PasswordChangeForm
+from django.utils import timezone
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 # Decorators
 def only_bought(view_func):
@@ -60,23 +63,35 @@ class LoginView(View):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
+
             if user is not None:
-                login(request, user)
+                login(request, user)  
+                
+                request.session['username'] = username
+                request.session['login_time'] = str(user.last_login)
+
+                response = redirect("dashboard")
+                response.set_cookie('last_login_user', username, max_age=3600)  # 1 hour expiry
+
                 messages.success(request, "Login successful!")
-                return redirect("dashboard")
+                return response
             else:
                 messages.error(request, "Invalid username or password.")
         else:
             messages.error(request, "Invalid login credentials.")
+
         return render(request, "login.html", {'form': form})
 
 
 # ** Logout User ** #
 @login_required
 def logout_view(request):
-    logout(request)
+    logout(request)  # Destroys session
+    response = redirect('login')
+    response.delete_cookie('last_login_user')  # Remove custom cookie
     messages.success(request, "You have been logged out.")
-    return redirect('login')
+    return response
+
 
 
 # ** Sell Product ** #
@@ -225,21 +240,26 @@ def submit_rating_view(request, product_id):
 
 
 # Dashboard View
-@login_required
-def dashboard_view(request):
+class DashboardView(LoginRequiredMixin, View):
+    def get(self, request):
+        username = request.session.get('username')  # session variable
+        last_login_user = request.COOKIES.get('last_login_user')  # cookie variable
 
-    recommended_products = Products.objects.filter(is_listed=True).order_by('?')[:6]
+        recommended_products = Products.objects.filter(is_listed=True).order_by('?')[:6]
 
-    for product in recommended_products:
-        if product.product_image:
-            with open(product.product_image.path, 'rb') as image_file:
-                image_data = base64.b64encode(image_file.read()).decode('utf-8')        
-        else:
-            product.image_data = ""
+        for product in recommended_products:
+            if product.product_image:
+                with open(product.product_image.path, 'rb') as image_file:
+                    product.image_data = base64.b64encode(image_file.read()).decode('utf-8')
+            else:
+                product.image_data = ""
 
-    return render(request, 'dashboard.html', {
-        'recommended_products': recommended_products
-    })
+        context = {
+            'username': username,
+            'last_user_cookie': last_login_user,
+            'recommended_products': recommended_products
+        }
+        return render(request, 'dashboard.html', context)
 
 # Profile View
 @login_required
@@ -385,10 +405,10 @@ def view_cart(request):
 
 #removefromcart
 @login_required
-def remove_from_cart(request, item_id):
-    item = get_object_or_404(CartItem, id=item_id, user=request.user)
-    item.delete()
-    messages.success(request, "Item removed from cart.")
+def remove_from_cart(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+    cart_item = get_object_or_404(CartItem, user=request.user, product=product)
+    cart_item.delete()
     return redirect('view-cart')
 
 #buy-cart
@@ -397,7 +417,7 @@ def buy_cart(request):
     cart_items = CartItem.objects.filter(user=request.user)
     for item in cart_items:
         if item.quantity > item.product.stock:
-            messages.error(request, f"Insufficient stock for {item.product.name}")
+            messages.error(request, f"Insufficient stock for {item.product.product_name}")
             return redirect('view-cart')
 
     for item in cart_items:
@@ -406,13 +426,63 @@ def buy_cart(request):
         product.save()
 
     
-        BoughtProduct.objects.create(
-            user=request.user,
+        ProductsBought.objects.create(
+            buyer=request.user,
             product=product,
             quantity=item.quantity,
-            bought_at=timezone.now()
+            price=item.product.price,
+            date_purchased= timezone.now(),
+            seller=item.product.seller_name,
         )
 
     cart_items.delete()
     messages.success(request, "Purchase completed successfully!")
     return redirect('dashboard') 
+
+#cart view
+class CartView(LoginRequiredMixin, View):
+
+    def get(self, request):
+    
+        cart_items = CartItems.objects.filter(user=request.user)
+
+        
+        total_price = sum(item.product.price * item.quantity for item in cart_items)
+
+        return render(request, 'buy_cart.html', {
+            'cart_items': cart_items,
+            'total_price': total_price
+        })
+
+    def post(self, request):
+        
+        action = request.GET.get('action')
+        product_id = request.GET.get('product_id')
+
+        if not action or not product_id:
+            return redirect('buy_cart')
+
+        product = get_object_or_404(Product, id=product_id)
+
+        if action == 'add':
+            cart_item, created = CartItems.objects.get_or_create(user=request.user, product=product)
+            if not created:
+                cart_item.quantity += 1
+                cart_item.save()
+            messages.success(request, f"{product.name} added to cart.")
+
+        elif action == 'remove':
+            CartItems.objects.filter(user=request.user, product=product).delete()
+            messages.info(request, f"{product.name} removed from cart.")
+
+        elif action == 'buy':
+            if product.stock > 0:
+                product.stock -= 1
+                product.save()
+                PurchaseHistory.objects.create(user=request.user, product=product)
+                CartItems.objects.filter(user=request.user, product=product).delete()
+                messages.success(request, f"You bought {product.name} successfully!")
+            else:
+                messages.error(request, f"{product.product_name} is out of stock.")
+
+        return redirect('buy_cart')

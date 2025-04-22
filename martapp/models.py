@@ -48,8 +48,9 @@ class ProductReviews(models.Model):
 class ProductsBought(models.Model):
     product = models.ForeignKey('Products', on_delete=models.CASCADE)
     buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    seller = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sold_products', on_delete=models.CASCADE)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    seller = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='products_bought', on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    quantity = models.PositiveIntegerField(default=1)
     date_purchased = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -81,6 +82,5 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ('user', 'product')
-
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name} x {self.quantity}"

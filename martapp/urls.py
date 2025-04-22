@@ -8,7 +8,7 @@ from .views import (
     recommendation_view,
     view_product_view,
     buy_product_view,
-    dashboard_view,
+    DashboardView,
     # submit_view,
     profile_view,
     change_username_view,
@@ -31,7 +31,7 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('register/', RegisterUserView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
-    path('dashboard/', dashboard_view, name='dashboard'),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('logout/', logout_view, name='logout'),
     path('sell/', sell_product_view, name='sell_product'),
     path('search/', search_view, name='search'), 
@@ -46,9 +46,9 @@ urlpatterns = [
     path('change-username/', change_username_view, name='change_username'),
     path('change-password/', change_password_view, name='change_password'),
     path('cart/', view_cart, name='view-cart'),
-path('cart/add/<int:product_id>/', add_to_cart, name='add-to-cart'),
-path('cart/remove/<int:item_id>/', remove_from_cart, name='remove-from-cart'),
-path('cart/buy/', buy_cart, name='buy-cart'),
+    path('cart/add/<int:product_id>/', add_to_cart, name='add-to-cart'),
+    path('cart/remove/<int:product_id>/', remove_from_cart, name='remove-from-cart'),
+    path('cart/buy/', buy_cart, name='buy-cart'),
 
 
 ]

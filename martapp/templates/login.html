@@ -31,6 +31,11 @@
        
             <p>Don't have an account yet? <a href="/register/">Register</a></p>
         </form>
+        <a href="{% url 'social:begin' 'google-oauth2' %}?next=/dashboard/">
+            <img src="{% static 'martapp/images/google_login.png' %}" alt="Login with Google" style="width: 350px; height: auto; margin-top: 20px;">
+
+        </a>
+        
     </div>
 </body>
 

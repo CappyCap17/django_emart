@@ -4,20 +4,107 @@
 <head>
     <meta charset="UTF-8">
     <title>Change Username</title>
-    <link rel="stylesheet" href="{% static 'martapp/dashboard.css' %}">
+    <style>
+        /* Reset & base styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #f1f1f1;
+        }
+
+        /* Centering the container */
+        .centered-form-container {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Styling the form box */
+        .form-box {
+            background-color: #1e1e1e;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-box h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #00bfff;
+        }
+
+        /* Form inputs */
+        form input[type="text"],
+        form input[type="password"],
+        form input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: #2a2a2a;
+            color: #f1f1f1;
+        }
+
+        form label {
+            font-weight: bold;
+        }
+
+        /* Buttons */
+        .primary-btn,
+        .secondary-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .primary-btn {
+            background-color: #00bfff;
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background-color: #009acd;
+        }
+
+        .secondary-btn {
+            background-color: #333;
+            color: white;
+        }
+
+        .secondary-btn:hover {
+            background-color: #555;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
+<div class="centered-form-container">
+    <div class="form-box">
         <h2>Change Username</h2>
 
         <form method="POST">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn">Save New Username</button>
+            <button type="submit" class="primary-btn">Save New Username</button>
         </form>
 
-        <a href="{% url 'profile' %}" class="btn">Back to Profile</a>
+        <a href="{% url 'profile' %}" class="secondary-btn">Back to Profile</a>
     </div>
+</div>
+
 </body>
 </html>

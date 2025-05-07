@@ -24,6 +24,9 @@ from .views import (
     add_to_cart,
     view_cart,
     buy_cart,
+    checkout_success_view,
+    checkout_view,
+    confirm_purchase_view
 
 )
 from django.contrib.auth import views as auth_views
@@ -49,6 +52,9 @@ urlpatterns = [
     path('cart/add/<int:product_id>/', add_to_cart, name='add-to-cart'),
     path('cart/remove/<int:product_id>/', remove_from_cart, name='remove-from-cart'),
     path('cart/buy/', buy_cart, name='buy-cart'),
+    path('checkout/<int:product_id>/', checkout_view, name='checkout'),
+    path('checkout/success/', checkout_success_view, name='checkout_success'),
+    path('confirm/<int:product_id>/', confirm_purchase_view, name='confirm_purchase'),
 
 
 ]

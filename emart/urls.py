@@ -24,4 +24,5 @@ urlpatterns = [
     path('', include('martapp.urls')),
     path('', lambda request: redirect('login/'), name='home'),
     path('login/', LoginView.as_view(), name='login'),
+    path('', include('social_django.urls', namespace='social')),
 ]

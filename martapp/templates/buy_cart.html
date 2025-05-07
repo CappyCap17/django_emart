@@ -4,66 +4,129 @@
     <title>Your Cart</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f3f4f6;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
         }
+
         .cart-container {
-            background: white;
-            padding: 20px;
-            max-width: 800px;
-            margin: auto;
-            border-radius: 10px;
+            background: #ffffff;
+            padding: 30px 40px;
+            max-width: 750px;
+            margin: 50px auto;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         }
+
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #1f2937;
+        }
+
         .cart-item {
-            border-bottom: 1px solid #e2e8f0;
-            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px 0;
         }
+
         .cart-item:last-child {
             border-bottom: none;
         }
+
+        .cart-item strong {
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .cart-item span {
+            display: inline-block;
+            margin-top: 5px;
+            color: #4b5563;
+        }
+
         label {
-            margin-right: 10px;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: 500;
+            color: #374151;
         }
+
+        input[type="number"] {
+            margin-top: 5px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            width: 80px;
+        }
+
         .buy-button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #22c55e;
+            margin-top: 25px;
+            padding: 12px 25px;
+            background: #10b981;
             color: white;
+            font-weight: bold;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
+            width: 100%;
+            font-size: 16px;
         }
+
+        .buy-button:hover {
+            background: #059669;
+        }
+
         .remove-btn {
-            color: red;
+            display: inline-block;
+            margin-top: 12px;
+            color: #ef4444;
+            font-size: 14px;
             text-decoration: underline;
             cursor: pointer;
         }
+
         .back-button {
-            color: grey;
-            margin-top: 10px;
-            padding: 10px 10px;
-            border-radius: 5px;
-            margin-right: 5px;
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #6b7280;
+            background: #e5e7eb;
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .back-button:hover {
+            background: #d1d5db;
+        }
+
+        p {
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
     <div class="cart-container">
         <h2>Your Cart</h2>
-        <a href="{% url 'dashboard' %}" class="back-button">Back</a>
+        <a href="{% url 'dashboard' %}" class="back-button">← Back to Dashboard</a>
+
         {% if cart_items %}
             <form method="POST" action="{% url 'buy-cart' %}">
                 {% csrf_token %}
                 {% for item in cart_items %}
                     <div class="cart-item">
                         <strong>{{ item.product.product_name }}</strong><br>
-                        Seller: {{ item.product.seller.user }}<br>
-                        Price: ₹{{ item.product.price }}<br>
-                        Stock: {{ item.product.stock }}<br>
+                        <span>Seller: {{ item.product.seller.user }}</span><br>
+                        <span>Price: ₹{{ item.product.price }}</span><br>
+                        <span>Stock: {{ item.product.stock }}</span><br>
 
-                        <label for="qty_{{ item.id }}">Quantity:</label>
-                        <input type="number" name="quantities[{{ item.id }}]" id="qty_{{ item.id }}" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}">
+                        <label for="qty_{{ item.id }}">Quantity:</label><br>
+                        <input type="number" name="quantities[{{ item.id }}]" id="qty_{{ item.id }}"
+                            value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}">
 
                         <br>
                         <a class="remove-btn" href="{% url 'remove-from-cart' item.product.id %}">Remove</a>

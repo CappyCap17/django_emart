@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Successful</title>
+</head>
+<body>
+    <h2>Order Placed Successfully!</h2>
+    <p><strong>Product:</strong> {{ info.product_name }}</p>
+    <p><strong>Delivery Address:</strong> {{ info.address }}</p>
+    <p><strong>Total Price:</strong> ₹{{ info.price }}</p>
+    <p><strong>Payment Mode:</strong> {{ info.payment_mode }}</p>
+    <p><strong>Contact:</strong> {{ info.contact }}</p>
+    <br>
+    <a href="{% url 'dashboard' %}">Return to Dashboard</a>
+</body>
+</html>

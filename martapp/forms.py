@@ -119,3 +119,16 @@ class CartQuantityForm(forms.ModelForm):
         widgets = {
             'quantity': forms.NumberInput(attrs={'min': '1'})
         }
+
+class CheckoutForm(forms.Form):
+    address1 = forms.CharField(label="Address", max_length=255)
+    address2 = forms.CharField(label="Address 2", max_length=255, required=False)
+    city = forms.CharField(label="City", max_length=100)
+    pincode = forms.CharField(label="Pincode", max_length=10)
+    contact_number = forms.CharField(label="Contact Number", max_length=15)
+    payment_mode = forms.ChoiceField(
+        choices=[('cash', 'Cash'), ('card', 'Card'), ('online', 'Online')],
+        widget=forms.RadioSelect
+    )
+    card_number = forms.CharField(label="Card Number", max_length=16, required=False)
+    upi_id = forms.CharField(label="UPI ID", max_length=100, required=False)

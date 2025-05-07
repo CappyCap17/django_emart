@@ -3,44 +3,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>{{ product.product_name }} - Buy Product</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buy Product</title>
-    <link rel="stylesheet" href="{% static 'martapp/style.css' %}">
+    <link rel="stylesheet" href="{% static 'martapp/styles.css' %}">
 </head>
 <body>
-    <div class="buy-container">
-        <div class="product-box">
-            {% if product.product_image %}
-                <img src="{{ product.product_image.url }}" alt="{{ product.product_name }}">
-            {% else %}
-                <p>No image available</p>
-            {% endif %}
+    <!-- Back Button -->
+    <a href="{% url 'dashboard' %}" class="back-button">← Back</a>
 
-            <h2>{{ product.product_name }}</h2>
-            <p><strong>Seller:</strong> {{ product.seller.username }}</p>
-            <p><strong>Price:</strong> ₹{{ product.price }}</p>
-            <p><strong>Stock Available:</strong> {{ product.stock }} units</p>  
-
-            <form method="POST">
-                {% csrf_token %}
-                <label for="quantity">Quantity:</label>
-                <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ product.stock }}">
-                
-                <button type="submit" class="buy-btn">Buy Now</button>
-            </form>
-
-            {% if error_message %}
-                <p class="error-message">{{ error_message }}</p>
-            {% endif %}
-
-            <div class="review-links">
-                <a href="{% url 'submit-review' product.id %}">Write a Review</a>
-                <a href="{% url 'submit-rating' product.id %}">Rate Product</a>
-            </div>
-            <br>
-        </br>
-        <a href="{% url 'add-to-cart' product.id %}">Add to Cart</a>
-        </div>
+    <div class="checkout-container">
+        <h2>{{ product.product_name }}</h2>
+        <img src="data:image/jpeg;base64,{{ product_image_base64 }}" width="300">
+        <p>Seller: {{ product.seller_name }}</p>
+        <p>Price: ₹{{ product.price }}</p>
+        <p>Type: {{ product.product_type }}</p>
+        <p>Rating: {{ product.rating }}</p>
+        <p>Stock Available: {{ product.stock }}</p>
+        <p>Description: {{ product.description }}</p>
+        
+        <form method="POST" action="{% url 'checkout' product.id %}">
+            {% csrf_token %}
+            <label>Quantity:</label>
+            <input type="number" name="quantity" min="1" max="{{ product.stock }}" value="1">
+            <button type="submit">Buy Now</button>
+        </form>
     </div>
 </body>
 </html>

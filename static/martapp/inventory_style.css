@@ -2,13 +2,14 @@ body {
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f8;
+    background-color: #121212;
+    color: #e0e0e0;
 }
 
 header {
     text-align: center;
     padding: 30px 0;
-    background-color: #2196F3;
+    background-color: #1e88e5;
     color: white;
 }
 
@@ -18,7 +19,7 @@ header {
     top: 20px;
     left: 20px;
     padding: 10px 20px;
-    background-color: #2196F3;
+    background-color: #1e88e5;
     color: white;
     border-radius: 5px;
     text-decoration: none;
@@ -26,7 +27,7 @@ header {
 }
 
 .back-btn:hover {
-    background-color: #1976d2;
+    background-color: #1565c0;
 }
 
 .inventory-container {
@@ -38,12 +39,12 @@ header {
 }
 
 .product-card {
-    background-color: white;
+    background-color: #1e1e1e;
     border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
     padding: 20px;
     width: 320px;
-    border: 1px solid #ddd;
+    border: 1px solid #333;
     text-align: center;
     transition: transform 0.3s ease;
 }
@@ -55,21 +56,23 @@ header {
 .product-card h2 {
     font-size: 20px;
     margin-bottom: 8px;
-    color: #333;
+    color: #ffffff;
 }
 
 .product-card p {
     margin: 4px 0;
     font-size: 14px;
-    color: #666;
+    color: #bbbbbb;
 }
 
 .product-card input[type="number"] {
+    background-color: #2a2a2a;
+    color: #ffffff;
     width: 100%;
     padding: 6px;
     margin-bottom: 6px;
     border-radius: 6px;
-    border: 1px solid #ccc;
+    border: 1px solid #444;
 }
 
 .product-card button {
@@ -82,33 +85,34 @@ header {
     transition: background-color 0.3s ease;
 }
 
+/* Button hover effect */
 .product-card button:hover {
     opacity: 0.9;
 }
 
 /* Button styles */
 .add-btn {
-    background-color: #4CAF50;
+    background-color: #43a047;
     color: white;
 }
 
 .remove-btn {
-    background-color: #f44336;
+    background-color: #e53935;
     color: white;
 }
 
 .list-btn {
-    background-color: #2196F3;
+    background-color: #1e88e5;
     color: white;
 }
 
 .unlist-btn {
-    background-color: #ff9800;
+    background-color: #fb8c00;
     color: white;
 }
 
 .delete-btn {
-    background-color: #9e9e9e;
+    background-color: #757575;
     color: white;
 }
 
@@ -118,9 +122,9 @@ header {
 }
 
 .status.listed {
-    color: green;
+    color: #66bb6a;
 }
 
 .status.unlisted {
-    color: red;
+    color: #ef5350;
 }

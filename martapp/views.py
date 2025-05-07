@@ -6,7 +6,7 @@ from django.core.paginator import Paginator
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
-from .forms import RegisterUserForm, LoginUserForm, CreateProductForm, CreateReviewForm, ChangeUsernameForm, ChangePasswordForm, ReviewForm, RatingForm, StockUpdateForm, CartQuantityForm
+from .forms import RegisterUserForm, LoginUserForm, CreateProductForm, CreateReviewForm, ChangeUsernameForm, ChangePasswordForm, ReviewForm, RatingForm, StockUpdateForm, CartQuantityForm, CheckoutForm
 from .models import CustomUser, Products, ProductReviews, ProductsBought, Purchase, CartItem 
 from functools import wraps
 import random
@@ -65,8 +65,8 @@ class LoginView(View):
             user = authenticate(request, username=username, password=password)
 
             if user is not None:
-                login(request, user)  
-                
+                login(request, user)
+
                 request.session['username'] = username
                 request.session['login_time'] = str(user.last_login)
 
@@ -74,6 +74,9 @@ class LoginView(View):
                 response.set_cookie('last_login_user', username, max_age=3600)  # 1 hour expiry
 
                 messages.success(request, "Login successful!")
+
+                print(f"[AUTH] User authenticated: {request.user.is_authenticated} | Username: {request.user.username}")
+
                 return response
             else:
                 messages.error(request, "Invalid username or password.")
@@ -159,27 +162,7 @@ def buy_product_view(request, product_id):
 
     if request.user == product.seller_name:
         messages.error(request, "You cannot buy your own product!")
-        return redirect('view-product', product_id=product.id)
-
-    if request.method == 'POST':
-        quantity = int(request.POST.get('quantity', 1))  
-       
-        if quantity > product.stock:
-            messages.error(request, "Not enough stock available!")
-            return redirect('buy-product', product_id=product.id)
-
-        ProductsBought.objects.create(
-            product=product,
-            buyer=request.user,
-            seller=product.seller_name,
-            price=product.price * quantity  
-        )
-
-        product.stock -= quantity
-        product.save()
-
-        messages.success(request, f"Purchase successful! You bought {quantity} {product.product_name}(s).")
-        return redirect('success_page', product_id=product.id)  
+        return redirect('dashboard')
 
     if product.product_image:
         with product.product_image.open('rb') as image_file:
@@ -240,18 +223,35 @@ def submit_rating_view(request, product_id):
 
 
 # Dashboard View
+import base64
+from django.shortcuts import render
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from martapp.models import Products  # Ensure this is imported
+
+# Dashboard View
 class DashboardView(LoginRequiredMixin, View):
     def get(self, request):
-        username = request.session.get('username')  # session variable
-        last_login_user = request.COOKIES.get('last_login_user')  # cookie variable
+        username = request.session.get('username')  
+        last_login_user = request.COOKIES.get('last_login_user') 
 
         recommended_products = Products.objects.filter(is_listed=True).order_by('?')[:6]
 
+        print(f"[DEBUG] Username: {username}, Last Login Cookie: {last_login_user}")
+        print(f"[DEBUG] Recommended Product IDs: {[p.id for p in recommended_products]}")
+
         for product in recommended_products:
             if product.product_image:
-                with open(product.product_image.path, 'rb') as image_file:
-                    product.image_data = base64.b64encode(image_file.read()).decode('utf-8')
+                try:
+                    with open(product.product_image.path, 'rb') as image_file:
+                        product.image_data = base64.b64encode(image_file.read()).decode('utf-8')
+                
+                    print(f"[DEBUG] Loaded image for product ID {product.id} from: {product.product_image.path}")
+                except Exception as e:
+                    print(f"[ERROR] Failed to load image for product ID {product.id}: {e}")
+                    product.image_data = ""
             else:
+                print(f"[DEBUG] No image for product ID {product.id}")
                 product.image_data = ""
 
         context = {
@@ -260,6 +260,7 @@ class DashboardView(LoginRequiredMixin, View):
             'recommended_products': recommended_products
         }
         return render(request, 'dashboard.html', context)
+
 
 # Profile View
 @login_required
@@ -372,8 +373,8 @@ def add_to_cart(request, product_id):
         cart_item.quantity += 1
         cart_item.save()
 
-    messages.success(request, "Product added to cart.")
-    return redirect('view-product', product_id=product.id)
+    messages.success(request, f"'{product.product_name}' has been added to your cart.")
+    return redirect('buy_product', product_id=product.id)
 
 #view-cart
 @login_required
@@ -469,11 +470,12 @@ class CartView(LoginRequiredMixin, View):
             if not created:
                 cart_item.quantity += 1
                 cart_item.save()
-            messages.success(request, f"{product.name} added to cart.")
+            messages.success(request, f"'{product.product_name}' has been added to your cart.")
+            return redirect('buy_cart')
 
         elif action == 'remove':
             CartItems.objects.filter(user=request.user, product=product).delete()
-            messages.info(request, f"{product.name} removed from cart.")
+            messages.info(request, f"{product.product_name} removed from cart.")
 
         elif action == 'buy':
             if product.stock > 0:
@@ -486,3 +488,71 @@ class CartView(LoginRequiredMixin, View):
                 messages.error(request, f"{product.product_name} is out of stock.")
 
         return redirect('buy_cart')
+
+
+
+
+#checkout 
+@login_required
+def checkout_view(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+
+    if request.method == 'POST':
+        quantity = int(request.POST.get('quantity', 1))
+
+        if quantity > product.stock:
+            messages.error(request, "Not enough stock.")
+            return redirect('buy_product', product_id=product_id)
+
+        if product.product_image:
+            with product.product_image.open('rb') as image_file:
+                encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+        else:
+            encoded_image = ''
+            
+        total_price = product.price * quantity
+
+        return render(request, 'checkout.html', {
+            'product': product,
+            'product_image_base64': encoded_image,
+            'quantity': quantity,
+            'total_price': total_price  
+        })
+
+    return redirect('buy_product', product_id=product_id)
+
+
+
+@login_required
+def confirm_purchase_view(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+
+    if request.method == 'POST':
+        quantity = int(request.POST.get('quantity', 1))
+
+        if quantity > product.stock:
+            messages.error(request, "Not enough stock available!")
+            return redirect('buy_product', product_id=product.id)
+
+        ProductsBought.objects.create(
+            product=product,
+            buyer=request.user,
+            seller=product.seller_name,
+            price=product.price * quantity
+        )
+
+        product.stock -= quantity
+        product.save()
+
+        messages.success(request, "Purchase successful!")
+        return render(request, 'purchase_success.html', {
+            'product': product,
+            'quantity': quantity
+        })
+
+    return redirect('dashboard')
+    
+@login_required
+def checkout_success_view(request):
+    info = request.session.get('checkout_info', {})
+    return render(request, 'martapp/checkout_success.html', {'info': info})

@@ -1,0 +1,107 @@
+body {
+    background-color: #121212;
+    color: #f5f5f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.buy-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 30px;
+    gap: 40px;
+}
+
+.product-image img {
+    width: 300px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.product-info {
+    background-color: #1e1e1e;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0, 173, 181, 0.3);
+    width: 100%;
+    max-width: 400px;
+}
+
+.product-info h2 {
+    color: #00adb5;
+    margin-bottom: 20px;
+}
+
+.product-info p {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+form input[type="text"],
+form select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #444;
+    background-color: #2c2c2c;
+    color: #eee;
+    margin-bottom: 15px;
+    font-size: 15px;
+}
+
+.buy-btn {
+    background-color: #00adb5;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+}
+
+.buy-btn:hover {
+    background-color: #00969e;
+}
+
+.back-button {
+    display: inline-block;
+    margin: 20px;
+    text-decoration: none;
+    background-color: #444;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+.back-button:hover {
+    background-color: #666;
+}
+
+/* Messages styling */
+.messages {
+    text-align: center;
+    padding-top: 20px;
+}
+
+.message {
+    margin: 10px auto;
+    padding: 12px 20px;
+    border-radius: 10px;
+    width: fit-content;
+}
+
+.message.error {
+    background-color: #ff4c4c;
+    color: white;
+}
+
+.message.success {
+    background-color: #4caf50;
+    color: white;
+}

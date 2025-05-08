@@ -1,7 +1,9 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-<head><title>Success</title></head>
+<head><title>Success</title>
+  <link rel="stylesheet" href="{% static 'martapp/success.css' %}">
+</head>
 <body>
   <h2>Order Confirmed!</h2>
   <p>You have successfully ordered <strong>{{ quantity }}</strong> of <strong>{{ product.product_name }}</strong>.</p>

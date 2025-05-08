@@ -17,7 +17,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SECRET_KEY='django-insecure-%-@^q0w*$b6*6j^mq15$1#e2#inbtb1uot6$yn3@09!97fnt(a'
+
+SECRET_KEY = os.environ.get('SECRET_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv("GOOGLE_CLIENT_ID")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
@@ -96,7 +97,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',  
         'NAME': 'emartdb',    
         'USER': 'postgres',      
-        'PASSWORD': 'pass@123',  
+        'PASSWORD': 'pass@1234',  
         'HOST': 'localhost',     
         'PORT': '5432',          
     }
